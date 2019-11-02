@@ -25,7 +25,9 @@
 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <Servo.h>
 
+Servo myservo;
 // Update these with values suitable for your network.
 
 const char* ssid = "verschwoerhaus-legacy";
@@ -33,7 +35,7 @@ const char* password = "mitcodedieweltverbessern";
 const char* mqtt_server = "192.168.9.124";
 int analogPin = A0;
 int maxW = 0;
-int digitalPin = D0;
+int digitalPin = D1;
 int zeit = 0;
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -115,7 +117,7 @@ void setup() {
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
   pinMode(digitalPin, OUTPUT);
-
+myservo.attach(2);
 }
 
 void loop() {
@@ -140,9 +142,11 @@ int wert = analogRead(analogPin);
     }
   }
   client.publish("escaperoom/windrad", "nein");
+  myservo.write(0);
   }else{
     digitalWrite(digitalPin,LOW);
     client.publish("escaperoom/windrad", "ja");
+    myservo.write(100);
     delay(2000);
   }
 }
