@@ -1,9 +1,11 @@
 
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <Adafruit_NeoPixel.h>
 
 // Update these with values suitable for your network.
-
+int leds = 71;
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(leds, 2, NEO_GRB + NEO_KHZ800);
 const char* ssid = "verschwoerhaus-legacy";
 const char* password = "mitcodedieweltverbessern";
 const char* mqtt_server = "192.168.9.124";
@@ -87,16 +89,17 @@ void reconnect() {
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   Serial.begin(115200);
-  setup_wifi();
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
   pinMode(digitalPin, OUTPUT);
+  pixels.begin();
 }
 
 void loop() {
 
   if (!client.connected()) {
-    reconnect();
+   /////////////////////////////////////////////// reconnect();
   }
   client.loop();
 
@@ -122,12 +125,20 @@ int wert = analogRead(analogPin);
     client.publish("escaperoom/blume", "ja");
     delay(2000);
   }
-  double a = (wert - 300)*(250/71);
-  for(int i = 0; i < 71; i++){
+  int mapMin = 500;
+  int mapMax = 700;
+//  int a = Math.round((wert - mapMin)*((mapMax - mapMin) / leds));
+  int a = map(wert, mapMin, mapMax, 0, leds);
+  Serial.print(wert);
+  Serial.print(", ");
+  Serial.println(a);
+  for(int i = 0; i < 30; i++){
     if(i < a){
       pixels.setPixelColor(i,pixels.Color(0,255,0));
     }else{
-      pixels.setPixelColor(i,pixels.Color(0,255,0));
+      pixels.setPixelColor(i,pixels.Color(0,0,0));
     }
   }
+
+pixels.show();
 }
